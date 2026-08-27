@@ -1,10 +1,435 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Persona Chat</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #111827, #1e1b4b);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+
+        .sidebar {
+            width: 280px;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.25);
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+        }
+
+        .persona {
+            width: 100%;
+            padding: 13px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            font-size: 15px;
+        }
+
+        .persona:hover,
+        .persona.active {
+            background: #4f46e5;
+        }
+
+        .clear {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 10px;
+            background: #dc2626;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Main */
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1000px;
+            margin: auto;
+            width: 100%;
+            padding: 30px;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 42px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #a5b4fc;
+            margin-bottom: 25px;
+        }
+
+        .mode {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #c4b5fd;
+        }
+
+        .chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            min-height: 400px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 13px 18px;
+            margin: 12px 0;
+            border-radius: 18px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .user {
+            margin-left: auto;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .bot {
+            margin-right: auto;
+            background: rgba(255,255,255,0.09);
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        .name {
+            font-size: 11px;
+            opacity: 0.7;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* Input */
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.08);
+            color: white;
+            outline: none;
+            font-size: 15px;
+        }
+
+        #messageInput::placeholder {
+            color: #aaa;
+        }
+
+        #send {
+            padding: 0 25px;
+            border: none;
+            border-radius: 12px;
+            background: #4f46e5;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        #send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media(max-width: 700px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .title {
+                font-size: 30px;
+            }
+
+            .main {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h1>🤖 AI Persona Chat</h1>
-    <p>Vercel deployment is working!</p>
+
+<div class="app">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <h2>🎭 Choose Mode</h2>
+
+        <button class="persona active" onclick="selectMode(this, 'you are an ai teacher')">
+            👨‍🏫 AI Teacher
+        </button>
+
+        <button class="persona" onclick="selectMode(this, 'you are a friend')">
+            🤝 Friend
+        </button>
+
+        <button class="persona" onclick="selectMode(this, 'you are an angry person')">
+            😡 Angry Person
+        </button>
+
+        <button class="persona" onclick="selectMode(this, 'you are a sad person')">
+            😢 Sad Person
+        </button>
+
+        <button class="clear" onclick="clearChat()">
+            🗑️ Clear Conversation
+        </button>
+
+    </aside>
+
+
+    <!-- Main Chat -->
+
+    <main class="main">
+
+        <div class="title">
+            🤖 AI Persona Chat
+        </div>
+
+        <div class="subtitle">
+            Choose your AI personality and start chatting
+        </div>
+
+        <div class="mode" id="currentMode">
+            Current Mode: 👨‍🏫 AI Teacher
+        </div>
+
+        <div class="chat" id="chat"></div>
+
+        <div class="input-area">
+
+            <input
+                id="messageInput"
+                type="text"
+                placeholder="Type your message..."
+                autocomplete="off"
+            >
+
+            <button id="send" onclick="sendMessage()">
+                Send
+            </button>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    let currentMode = "you are an ai teacher";
+
+    let history = [];
+
+
+    const modeNames = {
+        "you are an ai teacher": "👨‍🏫 AI Teacher",
+        "you are a friend": "🤝 Friend",
+        "you are an angry person": "😡 Angry Person",
+        "you are a sad person": "😢 Sad Person"
+    };
+
+
+    function selectMode(button, mode) {
+
+        currentMode = mode;
+
+        history = [];
+
+        document.getElementById("chat").innerHTML = "";
+
+        document.querySelectorAll(".persona").forEach(btn => {
+            btn.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        document.getElementById("currentMode").innerText =
+            "Current Mode: " + modeNames[mode];
+    }
+
+
+    function addMessage(type, text) {
+
+        const chat = document.getElementById("chat");
+
+        const message = document.createElement("div");
+
+        message.className = "message " + type;
+
+        const name = document.createElement("div");
+
+        name.className = "name";
+
+        name.innerText = type === "user" ? "YOU" : "AI";
+
+        const content = document.createElement("div");
+
+        content.innerText = text;
+
+        message.appendChild(name);
+
+        message.appendChild(content);
+
+        chat.appendChild(message);
+
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+
+    async function sendMessage() {
+
+        const input = document.getElementById("messageInput");
+
+        const sendButton = document.getElementById("send");
+
+        const message = input.value.trim();
+
+        if (!message) return;
+
+
+        addMessage("user", message);
+
+        input.value = "";
+
+        sendButton.disabled = true;
+
+        sendButton.innerText = "Thinking...";
+
+
+        try {
+
+            const response = await fetch("/api/chat", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    message: message,
+
+                    mode: currentMode,
+
+                    history: history
+
+                })
+
+            });
+
+
+            const data = await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.detail || "Something went wrong"
+                );
+
+            }
+
+
+            addMessage("bot", data.response);
+
+
+            history.push({
+                role: "user",
+                content: message
+            });
+
+
+            history.push({
+                role: "assistant",
+                content: data.response
+            });
+
+
+        } catch (error) {
+
+            addMessage(
+                "bot",
+                "❌ Error: " + error.message
+            );
+
+        }
+
+
+        sendButton.disabled = false;
+
+        sendButton.innerText = "Send";
+
+        input.focus();
+    }
+
+
+    function clearChat() {
+
+        history = [];
+
+        document.getElementById("chat").innerHTML = "";
+
+    }
+
+
+    document
+        .getElementById("messageInput")
+        .addEventListener("keydown", function(event) {
+
+            if (event.key === "Enter") {
+
+                sendMessage();
+
+            }
+
+        });
+
+</script>
+
 </body>
 </html>
